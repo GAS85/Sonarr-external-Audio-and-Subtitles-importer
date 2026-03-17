@@ -4,7 +4,7 @@
 DEFAULT_LANG="en"
 
 # Handle Sonarr Test event
-if [[ "${sonarr_eventtype:-}" == "Test" ]]; then
+if [[ "${sonarr_eventtype:-}" == "Test" || "${radarr_eventtype}" == "Test" ]]; then
   echo "Sonarr script test successful."
   exit 0
 fi
@@ -12,10 +12,26 @@ fi
 # Exit on error
 set -euo pipefail
 
-# Sonarr environment variables
-SOURCE_ROOT="${sonarr_episodefile_sourcefolder}"
-SOURCE_FILE="${sonarr_episodefile_sourcepath}"
-TARGET_FILE="${sonarr_episodefile_path}"
+if [[ -n "${sonarr_eventtype:-}" ]]; then
+  # Sonarr environment variables
+  APP="sonarr"
+  SOURCE_ROOT="${sonarr_episodefile_sourcefolder:-}"
+  SOURCE_FILE="${sonarr_episodefile_sourcepath:-}"
+  TARGET_FILE="${sonarr_episodefile_path:-}"
+
+elif [[ -n "${radarr_eventtype:-}" ]]; then
+  # Radarr environment variables
+  APP="radarr"
+  SOURCE_ROOT="${radarr_moviefile_sourcefolder:-}"
+  SOURCE_FILE="${radarr_moviefile_sourcepath:-}"
+  TARGET_FILE="${radarr_moviefile_path:-}"
+
+else
+  echo "Unknown caller (not Sonarr or Radarr)"
+  exit 1
+fi
+
+echo "Running external import for $APP"
 
 # Validate variables
 if [[ -z "${SOURCE_ROOT:-}" || -z "${SOURCE_FILE:-}" || -z "${TARGET_FILE:-}" ]]; then
