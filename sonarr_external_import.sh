@@ -45,9 +45,14 @@ process_files() {
     # Parent folder name (e.g. "Sound [MC-Ent]")
     folder_name="$(basename "$(dirname "$file")")"
 
+    tag=""
+
     # Remove leading "Sound " or "Sub "
-    tag="${folder_name#Sound }"
-    tag="${tag#Sub }"
+    if [[ "$folder_name" == Sound* ]]; then
+      tag="${folder_name#Sound }"
+    elif [[ "$folder_name" == Sub* ]]; then
+      tag="${folder_name#Sub }"
+    fi
 
     # Clean whitespace
     tag="$(echo "$tag" | xargs)"
