@@ -64,10 +64,10 @@ process_files() {
     tag=""
 
     # Remove leading "Sound " or "Sub "
-    if [[ "$folder_name" == *sound* || "$folder_name" == *Sound* ]]; then
-      tag="$(echo "$folder_name" | sed 's/.*sound[[:space:]]*//')"
-    elif [[ "$folder_name" == *sub* || "$folder_name" == *Sub* ]]; then
-      tag="$(echo "$folder_name" | sed 's/.*[Ss]ubs\?[[:space:]]*//')"
+    if [[ "$folder_name" == *[Ss]ound* ]]; then
+      tag="$(echo "$folder_name" | sed 's/.*[Ss]ound[[:space:]]\+//')"
+    elif echo "$folder_name" | grep -qiE '\bsub?\b'; then
+      tag="$(echo "$folder_name" | sed 's/.*[Ss]ub\?[[:space:]]\+//')"
     fi
 
     # Clean whitespace
