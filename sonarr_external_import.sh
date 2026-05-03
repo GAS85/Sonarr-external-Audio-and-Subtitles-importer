@@ -4,7 +4,7 @@
 DEFAULT_LANG="en"
 
 # Handle Sonarr Test event
-if [[ "${sonarr_eventtype:-}" == "Test" || "${radarr_eventtype}" == "Test" ]]; then
+if [[ "${sonarr_eventtype:-}" == "Test" || "${radarr_eventtype:-}" == "Test" ]]; then
   echo "Sonarr script test successful."
   exit 0
 fi
@@ -39,14 +39,14 @@ if [[ -z "${SOURCE_ROOT:-}" || -z "${SOURCE_FILE:-}" || -z "${TARGET_FILE:-}" ]]
   exit 1
 fi
 
-if [[ ! -d "$SOURCE_ROOT" ]]; then
+if [[ ! -d "${SOURCE_ROOT}" ]]; then
   echo "Source folder does not exist: $SOURCE_ROOT"
   exit 1
 fi
 
-TARGET_DIR="$(dirname "$TARGET_FILE")"
-BASENAME="$(basename "$SOURCE_FILE")"
-TARGET_BASENAME="$(basename "$TARGET_FILE")"
+TARGET_DIR="$(dirname "${TARGET_FILE}")"
+BASENAME="$(basename "${SOURCE_FILE}")"
+TARGET_BASENAME="$(basename "${TARGET_FILE}")"
 NAME_NO_EXT="${BASENAME%.*}"
 TARGET_NAME_NO_EXT="${TARGET_BASENAME%.*}"
 
@@ -56,18 +56,18 @@ echo -e "Source: $SOURCE_ROOT \nTarget: $TARGET_DIR \nBase name: $NAME_NO_EXT"
 process_files() {
   local ext="$1"
 
-  find "$SOURCE_ROOT" -type f -name "${NAME_NO_EXT}.${ext}" | while read -r file; do
+  while read -r file; do
 
     # Parent folder name (e.g. "Sound [MC-Ent]")
-    folder_name="$(basename "$(dirname "$file")")"
+    folder_name="$(basename "$(dirname "${file}")")"
 
     tag=""
 
     # Remove leading "Sound " or "Sub "
-    if [[ "$folder_name" == Sound* ]]; then
-      tag="${folder_name#Sound }"
-    elif [[ "$folder_name" == Sub* ]]; then
-      tag="${folder_name#Sub }"
+    if [[ "$folder_name" == *sound* || "$folder_name" == *Sound* ]]; then
+      tag="$(echo "$folder_name" | sed 's/.*sound[[:space:]]*//')"
+    elif [[ "$folder_name" == *sub* || "$folder_name" == *Sub* ]]; then
+      tag="$(echo "$folder_name" | sed 's/.*[Ss]ubs\?[[:space:]]*//')"
     fi
 
     # Clean whitespace
@@ -90,11 +90,11 @@ process_files() {
     echo "-> $target_file"
 
     if ! ln "$file" "$target_file" 2>/dev/null; then
-      echo "Symlink failed, copying instead."
+      echo "Hard link failed (cross-device?), copying instead."
       cp -p "$file" "$target_file"
     fi
 
-  done
+  done < <(find "${SOURCE_ROOT}" -type f | grep -F "${NAME_NO_EXT}.${ext}" || true)
 }
 
 # Process audio
