@@ -62,3 +62,38 @@ Then create custom connection in Sonarr **Settings** > **Connect** > **Custom Sc
 ├─ Sonarr Show Name.mka
 └─ Sonarr Show Name.srt
 ```
+
+### Test it locally / manual import of Audio and subtitiles
+
+You need to export few variables to test it locally or manual import files.
+
+```shell
+# Activate sonarr import
+sonarr_eventtype=true
+# Set source folder where downloaded files are saved
+sonarr_episodefile_sourcefolder="/Downloads/completed/Show Name [BDRip 1080p]/"
+# Set source file name
+sonarr_episodefile_sourcepath="/Downloads/completed/Show Name [BDRip 1080p]/Show Name - S01E01.mkv"
+sonarr_episodefile_path="/Videos/Show Name/Show Name - S01E01.mkv"
+```
+
+For structure like this:
+
+```plain
+├─ Sound
+│   └─ Show Name - S01E01.mka
+├─ Sub
+│   └─ Show Name - S01E01.srt
+└─ Show Name - S01E01.mkv
+```
+
+You can automate it
+
+```shell
+NUMBER=10 \
+sonarr_eventtype=true \
+sonarr_episodefile_sourcefolder="/Downloads/completed/Show Name [BDRip 1080p]/" \
+sonarr_episodefile_sourcepath="$(basename "$(find "$sonarr_episodefile_sourcefolder" -name "*S01E$NUMBER*.mkv")")" \
+sonarr_episodefile_path="$(basename "$(find "/Videos/Show Name" -name "*s01e$NUMBER*.mkv")")" \
+/usr/local/bin/sonarr_external_import.sh 
+```
